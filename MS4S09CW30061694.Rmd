@@ -1,0 +1,668 @@
+---
+title: "MS4S09 COURSEWORK"
+author: "MUHAMMED ADEBISI"
+date: "2023-02-22"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Installing packages
+```{r}
+#install.packages("tidytext")
+#install.packages("textdata")
+#install.packages("tidyverse")
+#install.packages("glue")
+#install.packages("stringr")
+#install.packages("ggthemes")
+#install.packages(dplyr)
+#install.packages(qdap)
+#install.packages(tm)
+#install.packages(wordcloud)
+#install.packages(plotrix)
+#install.packages(dendextend)
+#install.packages(ggplot2)
+#install.packages(ggthemes)
+#install.packages(reshape2)
+#install.packages(quanteda)
+#install.packages(readxl)
+#install.pacakages(SnowballC)
+```
+
+Loading the relevant libraries.
+```{r}
+library(dplyr) #is a data manipulation framework that offers a consistent collection of verbs, assisting in the resolution of the most common data manipulation challenges.
+library(stringr) #The library supports certain common use-cases like str length() and str c() (concatenate). Moreover, stringr has seven additional pattern matching routines that make it considerably simpler to perform string searches and counts. Patterns can either be regular expressions or just strings.
+library(tidytext) #To enable text conversion to and from tidy formats and easy switching between tidy tools and pre-existing text mining programmes, we provide functions and associated data sets in this package.
+library(ggplot2) # It can produce several types of data visualisations, including bar charts, pie charts, histograms, scatterplots, error charts, etc.
+library(tidyr) #Its exclusive concentration is on data tidying or cleaning linked to formatting. These are the ideas that are used by tidyr to define tidy data. Each column has the ability to modify, each row denotes a discovery, and each cell only holds one value.
+library(textdata) #The purpose of textdata is to make it simple to retrieve text-related data sets without packaging them.
+library(tidyverse) #tidyverse is about the connections between the tools that make the workflow possible
+library(glue) #provides interpreted string literals that are lightweight, quick, and independent.
+library(tm) #a framework for text mining-based R applications.
+library(wordcloud) #to minimise over-plotting in scatter plots with text, display differences and similarities across documents, and build lovely word clouds
+library(plotrix) #package includes resources for data graphing in R.
+library(dendextend) #provides a collection of functions for R dendrogram objects that allow you to compare and visualise trees of hierarchical clusterings. 
+library(ggthemes) #gives the ggplot2 package more themes, geometries, and scales.
+library(reshape2) #flexible data reshaping
+library(quanteda) # It was built to be used by individuals with textual data–perhaps from books, Tweets, or transcripts–to both manage that data (sort, label, condense, etc.) and analyze its contents.
+library(readxl) #to read the excel file
+library(SnowballC) #for stemming documents
+library(qdap) # to assist with quantitative analysis. The program combines qualitative discussion transcripts with statistical analysis and visualization
+```
+
+Introducing the Dataset
+```{r}
+#Exporting the data from excel
+Dataset<-read_excel("C:/Users/30061694/Downloads/MS4S09_CW_Data (2).xlsx")
+options(stringsAsFactors = FALSE) #Whether strings in a data frame should be considered as factor variables or as simple strings is determined by a logical argument. We commonly set it to FALSE for text mining in order to consider the characters as strings and properly utilise all text mining approaches.
+Dataset
+```
+
+TASK A 
+(TEXT MINING)
+Text mining is a technique that requires a considerable deal of knowledge because it includes a human engaging with a collection of documents over time while using various analysis tools. Similar to data mining, text mining aims to extract usable information from data sources by spotting and analysing intriguing patterns. In contrast, surprising patterns are found in the unstructured textual data in the documents in these collections rather than in the formalised database entries in text mining when the data sources are document collections.
+
+```{r}
+names(Dataset)
+```
+Listing the Columns in the Dataset
+
+```{r}
+head(Dataset)
+```
+listing the top rows in the dataset
+
+
+
+```{r}
+# Text Transformation/Extraction
+#The customer reviews for various goods are listed in the column Review_Text. Our analysis is focused on this. Now, we'll look at how to represent text in a data frame.
+
+#First, the Review_Text is transformed into a corpus, which is a group of related text documents. To achieve this, we utilise the R package "tm".
+
+#We must supply a "Source" object as an argument to the VCorpus function in order to construct a corpus using tm.
+
+#The source we employ in this case is a "Vectorsource" that exclusively accepts character vector inputs.
+#We have now created a corpus from the Review.text column that we refer to as "Customer_Dataset."
+
+Customer_Dataset <- Corpus(VectorSource(Dataset$Review_Text))
+Customer_Dataset
+```
+
+
+```{r}
+inspect(Customer_Dataset)
+```
+
+```{r}
+toSpace <- content_transformer (function(x , pattern) gsub(pattern, " ", x))
+Customer_Dataset <- tm_map(Customer_Dataset, toSpace, "/")
+Customer_Dataset <- tm_map(Customer_Dataset, toSpace, "@")
+Customer_Dataset <- tm_map(Customer_Dataset, toSpace, "\\|")
+```
+
+
+```{r}
+#Change to lower case so that, for example, the phrases "Boot" and "boot" will be combined to form the word "boot"
+Customer_Dataset<- tm_map(Customer_Dataset, tolower)
+```
+
+
+```{r}
+#Remove Punctuation
+Customer_Dataset <- tm_map(Customer_Dataset, removePunctuation)
+```
+
+
+```{r}
+#strip whitespace
+# this Remove any excess whitespace from a text file. There is a collapse of many whitespace characters into a single blank.
+dataset_review <- tm_map(dataset_review, stripWhitespace)
+```
+
+
+```{r}
+#Remove stopwords
+#Remove stopwords: When doing text mining, understanding the idea of "stopwords" is crucial. As we write, there are typically several prepositions, pronouns, conjunctions, etc. in the text. Before we analyse the text, these words must be deleted. Otherwise, stopwords will show up in every list of commonly used words and will distort the meaning of the text's main terms.
+Customer_Dataset <- tm_map(Customer_Dataset, removeWords, stopwords("english"))
+```
+
+
+
+Stemming
+```{r}
+## Stemming document
+#stemming refers to the process of reducing inflected (or derived) words to their word stem, base, or root form typically a written word form.For instance, using a stemming technique, the terms "replacement," "replaced," and "replacing" are all reduced to the word "replace" as their root.
+Customer_Dataset <- tm_map(Customer_Dataset, stemDocument)
+
+##Viewing the corpus content
+Customer_Dataset[[1]][1]
+```
+It is clear from the results that the client was satisfied with the product.
+
+
+```{r}
+# Find the 25 most common terms:common_term
+common_term <- freq_terms(Customer_Dataset, 25)
+common_term
+```
+This are the most top 25 frequently used words
+
+
+```{r}
+# Plot 25 most frequent terms
+plot(common_term)
+```
+
+
+
+
+
+
+Creating the DTM & TDM from the corpus
+  The cleaned-up and preprocessed corpus is then transformed into a matrix known as the document term matrix.
+
+The document-term matrix is a mathematical matrix that may be used to calculate the frequency of words used in a group of documents. In a document-term matrix, the columns represent the collection's terms, while the rows represent its documents.
+
+The document-term matrix has been superseded by the term-document matrix. In language analysis, it is commonly employed. By converting the DTM/TDM into a simple matrix using as.matrix, it is easy to begin analysing the data ().
+```{r}
+examine_dtm <- DocumentTermMatrix(Customer_Dataset)
+examine_tdm <- TermDocumentMatrix(Customer_Dataset)
+```
+
+
+Searching for popular phrases with the TDM
+```{r}
+# Convert TDM to matrix
+examine_m <- as.matrix(examine_tdm)
+# Sum rows and frequency data frame
+examine_term_freq <- rowSums(examine_m)
+# Sort term_frequency in descending order
+examine_term_freq <- sort(examine_term_freq, decreasing = T)
+# View the top 20 most common words
+examine_term_freq[1:20]
+```
+
+Plotting a Bar chart of 30 most common words
+```{r}
+# Plot a barchart of the 30 most common words
+barplot(examine_term_freq[1:15], col = "darkblue", las = 2)
+```
+
+
+Word cloud
+A word cloud is a well-liked technique for determining the phrases that appear most frequently in a text corpus. The size of the terms in the word cloud varies depending on how frequently they are used.Want to check for the top 60
+```{r}
+check_word_freq <- data.frame(term = names(examine_term_freq),
+  num = examine_term_freq)
+# Create a wordcloud for the values in word_freqs
+wordcloud(check_word_freq$term, check_word_freq$num,
+  max.words = 60, colors = brewer.pal(4,"Dark2"))
+```
+
+
+
+TASK B
+(SENTIMENT ANALYSIS)
+  Using machine learning and natural language processing (nlp), sentiment analysis, commonly referred to as opinion mining, is a text mining technique that automatically examines texts for the author's sentiment (positive, negative, neutral, and beyond).
+  Text mining's major objective is to extract useful data and insights from texts so that businesses may make informed decisions.
+  With the use of sophisticated machine learning algorithms, it is simple to determine whether a comment is good, negative, or neutral. Much more specific results can be obtained by using aspect-based sentiment analysis.
+  Aspect-based sentiment analysis analyses material, such as customer reviews or product testimonials, first by category to determine whether categories are positive or negative (Features, Shipping, Customer Service, etc.).
+
+
+Tokenization
+The process of tokenization in natural language processing involves breaking down the given text into tokens, which are the smallest grammatical units of a sentence. Punctuation, words, and numbers can all be viewed as tokens. Tokenization is  required because we could wish to count the number of times each word appears in the provided text by dividing it up into tokens.
+```{r}
+#We then need to split the text into tokens.
+tidy_data <- Dataset %>%
+  unnest_tokens(word, Review_Text)
+tidy_data
+```
+
+
+```{r}
+#Once again we need to remove stop words from the data.
+data(stop_words)
+tidy_data <- tidy_data %>%
+  anti_join(stop_words, by = "word")
+```
+
+
+```{r}
+#Use the count function to identify the most common words.
+tidy_data %>%
+  count(word, sort = TRUE) 
+```
+
+.
+```{r}
+#Produce a plot of the all words which appear more then 2500 times
+tidy_data %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 2500) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip()
+```
+
+
+Sentiment analysis with the tidytext package using the "bing" lexicon
+```{r}
+text_df <- tibble(text = str_to_lower(Dataset$Review_Text))
+text_df
+```
+
+
+```{r}
+#Review the sentiment lexicons in the tidyverse package.
+sentiments
+```
+
+
+```{r}
+#sentiment analysis with the tidytext package using the "bing" lexicon
+bing_word_counts <- text_df %>% unnest_tokens(output = word, input = text) %>% 
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE)
+```
+
+
+```{r}
+#select top 20 words by sentiment using bing(Positve and Negative)
+bing_top_10_word_sentiment <- bing_word_counts %>%
+  group_by(sentiment) %>%
+  slice_max(order_by = n, n = 20) %>%
+  ungroup()%>%
+  mutate(word = reorder(word, n))
+bing_top_10_word_sentiment
+```
+
+
+
+```{r}
+#create a barplot showing contribution of words to sentiment
+bing_top_10_word_sentiment %>%
+  ggplot(aes(word, n, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(y = "Contribution to sentiment", x =  NULL) +
+  coord_flip()
+```
+
+
+```{r}
+#comparison of the negative and positive sentiment using wordcloud 
+library(wordcloud)
+library(reshape2)
+
+ bing_word_counts <- tidy_data %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  acast(word ~ sentiment, value.var = "n", fill = 0) %>%
+  comparison.cloud(colors = c("darkblue", "darkgreen"),
+                   max.words = 100)
+```
+The comparison cloud makes a clear distinction between terms used by individuals who are pleased with the product (Positive) and those who are not (Negative). Those who didn't like it used words like "disappointing," "flare," "cheap," and other unfavourable adjectives, while those that are please with it used words like "love", "perfect", "cute" and other favourable adjectives.
+
+
+
+
+
+
+
+Using SYUZHET package for generating sentiment score
+  Sentiments can also be represented numerically in order to better communicate the degree of positive or negative strength included in a body of text.
+
+This example generates sentiment scores using the Syuzhet package, which includes four sentiment dictionaries and a mechanism for accessing the sentiment extraction tool built by Stanford's NLP lab.
+
+The function get sentiment takes two parameters: a character vector (containing sentences or words) and a method. Which of the four available sentiment extraction methods will be utilised is determined by the approach chosen. The four available techniques are syuzhet, bing, afinn, and nrc.
+
+However,we will be making use of the syuzhet package.
+
+installing packages
+```{r}
+#install.packages("syuzhet")
+#install.packages("lubridate")
+#install.packages("scales")
+```
+
+loading the relevant libraries
+```{r}
+library(syuzhet)
+library(lubridate)
+library(scales)
+```
+
+
+```{r}
+#Taking the review_text column
+review <- iconv(Dataset$Review_Text)
+```
+
+```{r}
+#Obtaining the sentiment score named sent
+Syuzhet_vector <- get_sentiment(review, method="syuzhet")
+```
+
+```{r}
+#viewing the first row of the vector
+head(Syuzhet_vector)
+```
+The Syuzhet vector's first element has a value of 2.00, according to a visual inspection. This indicates that the first response's (line) sentiment scores for all significant words in the text file add up to 2.00. The syuzhet method uses a decimal scale for sentiment scores that ranges from -1 (indicating the most negative) to +1 (indicating the most positive).
+
+
+
+```{r}
+#checking for summary
+summary(Syuzhet_vector)
+```
+However, the median value of the suyzhet vector's summary statistics is 2.300, which is greater than zero and indicates that the overall average response sentiment is positive.
+
+
+
+
+
+
+
+
+
+
+
+TASK C
+(TOPIC MODELLING) 
+The use of topic models makes it simple to analyse large amounts of unlabeled text. A theme is a collection of words that are regularly used together. Using contextual clues, topic models can connect words with similar meanings and distinguish between distinct uses of words with different meanings.
+
+```{r}
+#install.package("topicmodels")
+
+library(topicmodels)
+```
+
+```{r}
+#From the DTM in the Text Mining
+examine_dtm <- DocumentTermMatrix(Customer_Dataset)
+examine_dtm
+```
+
+
+```{r}
+#filling zeros rows with number
+all_zero_rows <- which(apply(examine_dtm, 1, function(x) all (x==0)))
+z_dtm <- examine_dtm[-all_zero_rows,]
+z_dtm
+```
+
+```{r}
+#we turn the DTM data into data frame
+#and name it :Mod_td
+Mod_td <- tidy(z_dtm)
+Mod_td
+#Notice that only the non-zero values are included in the tidied output
+```
+
+
+```{r}
+#We now have the sentiment analysis as follows
+Mod_sentiments <- Mod_td %>%
+  inner_join(get_sentiments("bing"), by = c(term = "word"))
+Mod_sentiments
+```
+
+
+
+```{r}
+#Contribution sentiment for words that appears more than 400 times
+#For negative and positive sentiment
+library(ggplot2)
+Mod_sentiments %>%
+  count(sentiment, term, wt = count) %>%
+  ungroup() %>%
+  filter(n >=400) %>%
+  mutate(n = ifelse(sentiment == "negative", -n, n)) %>%
+  mutate(term = reorder(term, n)) %>%
+  ggplot(aes(term, n, fill = sentiment)) +
+  geom_bar(stat = "identity") +
+  ylab("Contribution to sentiment") +
+  coord_flip()
+```
+
+
+```{r}
+#We can use the LDA() function from the topicmodels package, setting k = 4, 
+#to create a four-topic LDA model.
+
+# set a seed so that the output of the model is predictable
+Mod_lda <- LDA(z_dtm, k = 4, control = list(seed = 1234))
+Mod_lda
+```
+
+
+```{r}
+# extracting the per-topic-per-word probabilities, called "beta", from the model.
+
+Mod_topics <- tidy(Mod_lda, matrix = "beta")
+Mod_topics
+```
+
+
+```{r}
+#Examine most common 15 terms in each topic
+Mod_top_terms <- Mod_topics %>%
+  group_by(topic) %>%
+  top_n(15, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+
+Mod_top_terms %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip() 
+```
+
+
+```{r}
+#As an alternative, we could consider the terms that had the greatest difference in beta between topic 1 ,topic 2, topic 3 and topic 4.
+
+beta_spread <- Mod_topics %>%
+  mutate(topic = paste0("topic", topic)) %>%
+  spread(topic, beta) %>%
+  filter(topic1 > .001 | topic2 > .001 | topic3 > .001 | topic4 > .001) %>%
+  mutate(log_ratio = log2(topic4 / topic3 / topic2 / topic1))
+
+beta_spread
+```
+
+
+
+```{r}
+#Examine top 30 beta scores
+beta_top_terms <- beta_spread %>%
+  top_n(30, log_ratio) 
+
+beta_top_terms %>%
+  ggplot(aes(term, log_ratio)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() 
+```
+
+
+```{r}
+#To get the document topic probability
+#We can examine the per-document-per-topic probabilities, called "gamma"
+Mod_documents <- tidy(Mod_lda, matrix = "gamma")
+Mod_documents
+```
+
+
+
+Word associations
+Word association is a way of identifying the correlation between two words in a DTM or TDM. It is another way to recognize terms that are frequently used together. The word association plot reveals a relationship between various terms and the word "perfect" in our corpus.However, we will be making use of the TDM. 
+```{r}
+associations <- findAssocs(review_tdm, "perfect", 0.05)
+
+associations_df <- list_vect2df(associations)[, 2:3]
+
+ggplot(associations_df, aes(y=associations_df[, 1])) +
+  geom_point(aes(x = associations_df[, 2]),
+             data = associations_df, size = 3) +
+  ggtitle("Word Associations to 'perfect'") +
+  theme_gdocs()
+
+```
+The word "perfect" are most commonly associated with "fit" and "lenght".
+
+
+
+
+Word Clustering
+Based on the distance in frequency, word clustering helps identify word groups that are frequently used together. This is a method of dimension reduction. It aids in putting words into clusters that are related. 
+We can now use a dendogram to visualize the word cluster as follow:
+```{r}
+review_tdm2 <- removeSparseTerms(review_tdm, sparse = 0.9)
+dnd <- hclust(d = dist(review_tdm2,method = "euclidean"), method="complete")
+```
+
+```{r}
+plot(dnd)
+```
+The cluster dendogram reveals the relationships between various word groups. For instance, the terms "length" ,"also", and "much" have been used together. The cluster identifies the most frequently occurring group of words since the clustering is based on frequency distances.
+
+
+
+
+
+
+
+Task D 
+Further exploration 
+```{r}
+#Removing all the NA's in the Dataset
+datamod <- na.omit(Dataset)
+```
+
+
+We wish to investigate goods that costumers have not recommended.
+
+Firstly,lets check for the frequency distribution of the recommended_IND
+```{r}
+#convert to factor
+datamod$Recommended_IND <- as.factor(datamod$Recommended_IND)
+
+#Frequency distribution of Recommended IND sorted by frequency count
+ggplot(datamod, aes(x = reorder(Recommended_IND, -table('Recommended IND')[Recommended_IND]), fill = Recommended_IND)) +
+  geom_bar() +
+  ggtitle("Recommended_IND frequency distribution") +
+  xlab("Recommended_IND") +
+  ylab("Frequency") +
+  theme(legend.position = "none")
+```
+Customers indicate that they would recommend the product more
+
+
+
+want to know the total count and percentage of recommendations(Recommended and Not recommended) using frequency table
+```{r}
+#frequency table for Recommended_IND
+datamod %>%
+  group_by(Recommended_IND) %>%
+  summarize(TotalCount = n())%>%
+              mutate(Prop = round(TotalCount/sum(TotalCount)*100, digits = 2))
+```
+Now we know that 81.82% of customers recommend the products
+
+
+```{r}
+datamod %>%
+  group_by(Recommended_IND) %>%
+  summarize(Average_Rating = mean(Rating), TotalCount= n())
+```
+the table indicates a decrease in rating from customers who do not recommend to the ones that recommend.This analysis could help identify the specific areas in which improvements are needed to increase customer satisfaction and consequently,the likelihood of recommendations.
+
+Observing product that were not recommended by the customers
+```{r}
+#Using a scatter plot
+ggplot(datamod, aes(x=Age, y= Rating, color = Recommended_IND)) +
+  geom_point()
+```
+This demonstrates that you recommend products to other customers when you rate them highly. The chart also demonstrates that an average rating of 3 results in roughly equal numbers of recommendations and non-recommendations, while ratings of 4-5 indicate good ratings (recommended) and ratings of 1-2 indicate poor ratings (not recommended).
+
+
+
+Visualizing the negative sentiment from customers(that is,customers that will not recommend)
+```{r}
+#check negative sentiment
+tokens_nonrec <- datamod %>%
+  filter(Recommended_IND == 0) %>%
+  unnest_tokens(word, Review_Text) %>%
+  anti_join(stop_words)
+
+#using bing for the tokenization to determine wether the words are positive or negative
+sentiment_nonrec <- tokens_nonrec %>%
+  inner_join(get_sentiments("bing"), by = "word", multiple = "all")
+
+#now to visualise the negative sentiment(Not recommended products)
+sentiment_nonrec %>%
+  count(word, sentiment) %>%
+  filter(sentiment == "negative") %>%
+  top_n(30) %>%
+  ungroup() %>%
+  arrange(desc(sentiment), n) %>%
+  ggplot(aes(x=n, y = reorder(word, n), fill = sentiment)) +
+  geom_col() + 
+  facet_wrap(~sentiment, scales = "free") +
+  labs(title = "Sentiment(Not Recommended)", x = "Frequency", y = "Word") +
+  scale_fill_brewer(palette = "BrBG") +
+  theme_minimal()
+```
+An analysis of the negative sentiment associated with the graphic shows that customers who gave the product a unfavorable audit used words like "disappointed", "burst", "cheap", "loose", "bad", etc. to describe the quality of the products.Even words like 'strange' and 'awkward' suggest that some products are not what they appear to be, or perhaps not what they expect. Through this, the store should try to improve the quality of the products and please the customers with the product.
+
+
+Additional visualisations
+
+```{r}
+#Frequency distribution
+Dataset %>%
+  mutate(Department_Name) %>%
+  filter(Rating == 5)%>%
+  ggplot(aes(Rating, fill = Department_Name)) +
+  geom_bar(position = "dodge", alpha = 0.5) +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  labs(title = "Rating of the Department",
+       x = "Department_Name",
+       y = "Number")
+```
+In the visualization, the Tops appear to be the most popular picks and the least popular is the trend.
+
+
+```{r}
+#Wordcloud with shape
+wordcloud2(check_word_freq, size= 0.3,  shape = "star")
+```
+Using the frequent term count,we visualize a wordcloud in a STAR shape
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
